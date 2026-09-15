@@ -44,3 +44,8 @@ def list_medicoes(
     limit: int = Query(default=100, ge=1, le=1000),
 ):
     return MedicaoService.list_medicoes(deviceId, sensorId, inicio, fim, limit)
+
+@router.get("/analise/{device_id}")
+def obter_analise_consumo(device_id: str):
+    return MedicaoService.analisar_consumo(device_id)
+    

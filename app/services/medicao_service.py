@@ -97,3 +97,39 @@ class MedicaoService:
         result["waterTariffPerCubicMeter"] = tariff
         result["totalCost"] = round(result["totalCubicMeters"] * tariff, 2)
         return result
+
+
+        from app.repositories.medicao_repository import MedicaoRepository
+
+class MedicaoService:
+   
+
+    @staticmethod
+    def analisar_consumo(device_id: str):
+        # Busca as ultimas 15 medicoes
+        medicoes = MedicaoRepository.find_all({"deviceId": device_id}, limit=15)
+
+        if not medicoes or len(medicoes) < 2:
+            return {
+                "device_id": device_id,
+                "consumo_atual": medicoes[0].get("volume", 0) if medicoes else 0,
+                "media_consumo": 0,
+                "alerta_atipico": False,
+                "mensagem": "Histórico insuficiente."
+            }
+
+        consumo_atual = medicoes[0].get("volume", 0)
+        volumes_anteriores = [m.get("volume", 0) for m in medicoes[1:] if "volume" in m]
+        
+        media = sum(volumes_anteriores) / len(volumes_anteriores)
+        limite_aceitavel = media * 1.3 # 30% acima da media
+        is_atipico = consumo_atual > limite_aceitavel
+
+        return {
+            "device_id": device_id,
+            "consumo_atual": round(consumo_atual, 2),
+            "media_consumo": round(media, 2),
+            "limite_aceitavel": round(limite_aceitavel, 2),
+            "alerta_atipico": is_atipico,
+            "mensagem": " Alerta: Consumo acima do normal detectado!" if is_atipico else " Consumo dentro da normalidade."
+        }
