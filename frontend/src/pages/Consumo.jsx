@@ -10,7 +10,11 @@ import '../styles/cards.css';
 function Consumo() {
   const [litros, setLitros] = useState({ data: null, loading: true, error: false });
   const [m3, setM3] = useState({ data: null, loading: true, error: false });
-
+  
+  // Estado da branch feat/frontend-consumo
+  const [analise, setAnalise] = useState({ data: null, loading: true, error: false });
+  
+  // Estados da branch master
   const [contas, setContas] = useState({ data: [], loading: true, error: false });
   const [referencia, setReferencia] = useState({ data: null, loading: true, error: false, insuficiente: false });
   const [statusHoje, setStatusHoje] = useState({ data: null, loading: true, error: false });
@@ -46,6 +50,20 @@ function Consumo() {
     medicaoService.getConsumoCubicMeters()
       .then((res) => setM3({ data: res.data, loading: false, error: false }))
       .catch(() => setM3({ data: null, loading: false, error: true }));
+
+    fetch('http://localhost:8000/medicoes/analise', {
+      // headers: { 'Authorization': `Bearer ${seuToken}` } // <- Você precisará disso se usar fetch puro
+    }) 
+      .then((res) => res.json())
+      .then((data) => {
+        setAnalise({ data: data, loading: false, error: false });
+        
+        // Se for atípico, dispara o pop-up na tela do celular/PC
+        if (data.alerta_atipico) {
+          alert(`🚨 ALERTA DE CONSUMO ATÍPICO 🚨\n\nSeu consumo atual (${data.consumo_atual}L) ultrapassou bastante a sua média de ${data.media_consumo}L.\n\nVerifique possíveis vazamentos!`);
+        }
+      })
+      .catch(() => setAnalise({ data: null, loading: false, error: true }));
 
     consumoAtipicoService.getHistorico(14)
       .then((res) => setHistorico({ data: res.data, loading: false, error: false }))
@@ -89,6 +107,14 @@ function Consumo() {
       />
 
       <div className="info-grid" style={{ maxWidth: 500, marginBottom: 36 }}>
+        <InfoCard
+          title="Média de Consumo"
+          value={analise.data ? analise.data.media_consumo : '--'}
+          unit="L"
+          loading={analise.loading}
+          error={analise.error}
+          highlight={analise.data ? analise.data.alerta_atipico : false}
+        />
         <InfoCard
           title="Consumo total"
           value={litros.data ? litros.data.totalLiters.toFixed(3) : '--'}
