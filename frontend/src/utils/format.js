@@ -1,3 +1,10 @@
+function garantirUTC(dateValue) {
+  if (typeof dateValue === 'string' && !dateValue.endsWith('Z') && !dateValue.includes('+')) {
+    return dateValue + 'Z';
+  }
+  return dateValue;
+}
+
 export function formatDuration(seconds) {
   if (seconds == null) return '--';
   if (seconds < 60) return `${seconds}s`;
@@ -8,7 +15,7 @@ export function formatDuration(seconds) {
 
 export function formatDateTime(dateValue) {
   if (!dateValue) return '--';
-  return new Date(dateValue).toLocaleString('pt-BR', {
+  return new Date(garantirUTC(dateValue)).toLocaleString('pt-BR', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -19,7 +26,7 @@ export function formatDateTime(dateValue) {
 
 export function calcInicio(timestamp, intervalSeconds) {
   if (!timestamp) return null;
-  const fimMs = new Date(timestamp).getTime();
+  const fimMs = new Date(garantirUTC(timestamp)).getTime();
   const inicioMs = fimMs - (intervalSeconds || 0) * 1000;
   return new Date(inicioMs).toISOString();
 }

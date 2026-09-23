@@ -49,3 +49,11 @@ class MedicaoRepository:
             {"volume": 1, "timestamp": 1, "_id": 0}
         )
         return list(cursor)
+
+    @classmethod
+    def sum_volume_since(cls, device_id: str, since=None) -> float:
+        query = {"deviceId": device_id}
+        if since:
+            query["timestamp"] = {"$gte": since}
+        cursor = cls.collection.find(query, {"volume": 1, "_id": 0})
+        return sum(doc["volume"] for doc in cursor if "volume" in doc)
