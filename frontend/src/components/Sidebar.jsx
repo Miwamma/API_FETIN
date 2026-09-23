@@ -41,10 +41,10 @@ function Sidebar({ usuario }) {
         </p>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
+      <div style={{ marginTop: 12 }}>
         <NotificationBell />
       </div>
-
+    
       <nav className="sidebar__nav">
         {NAV_ITEMS.map((item) => (
           <NavLink

@@ -29,6 +29,13 @@ class ContaAguaService:
         return [ContaAguaService._serialize(doc) for doc in docs]
 
     @staticmethod
+    def delete_conta(user_email: str, conta_id: str):
+        deletado = ContaAguaRepository.delete_by_id(conta_id, user_email)
+        if not deletado:
+            raise HTTPException(status_code=404, detail="Conta de água não encontrada")
+        return {"message": "Conta de água removida com sucesso"}
+
+    @staticmethod
     def get_daily_reference(user_email: str) -> dict:
         docs = ContaAguaRepository.find_by_user(user_email)
 

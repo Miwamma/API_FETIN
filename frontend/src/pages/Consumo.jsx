@@ -81,6 +81,18 @@ function Consumo() {
     }
   };
 
+  const handleDeleteConta = async (id) => {
+    try {
+      await contaAguaService.delete(id);
+      setContas({ data: [], loading: true, error: false });
+      setReferencia({ data: null, loading: true, error: false, insuficiente: false });
+      setStatusHoje({ data: null, loading: true, error: false });
+      carregarContasEReferencia();
+    } catch (erro) {
+      console.error(erro);
+    }
+  };
+
   return (
     <div>
       <PageHeader
@@ -227,12 +239,30 @@ function Consumo() {
                   boxShadow: '0 4px 14px rgba(15,23,42,.05)',
                   display: 'flex',
                   justifyContent: 'space-between',
+                  alignItems: 'center',
                   fontSize: 14,
                   color: '#334155',
                 }}
               >
                 <span>{conta.mesReferencia || 'Sem mês informado'}</span>
-                <strong>{conta.consumoM3.toFixed(2)} m³</strong>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <strong>{conta.consumoM3.toFixed(2)} m³</strong>
+                  <button
+                    onClick={() => handleDeleteConta(conta.id)}
+                    title="Excluir registro"
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#ef4444',
+                      fontSize: 16,
+                      padding: 4,
+                      lineHeight: 1,
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
             ))}
           </div>

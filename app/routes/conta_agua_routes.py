@@ -16,6 +16,11 @@ def list_contas(limit: int = Query(default=5, ge=1, le=100), current_user: dict 
     return ContaAguaService.list_contas(current_user["email"], limit)
 
 
+@router.delete("/{conta_id}", summary="Remover uma conta de água cadastrada")
+def delete_conta(conta_id: str, current_user: dict = Depends(get_current_user)):
+    return ContaAguaService.delete_conta(current_user["email"], conta_id)
+
+
 @router.get("/referencia-diaria", summary="Referência diária de consumo, calculada pela média das 3 contas mais recentes")
 def get_daily_reference(current_user: dict = Depends(get_current_user)):
     return ContaAguaService.get_daily_reference(current_user["email"])

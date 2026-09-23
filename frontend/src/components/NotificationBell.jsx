@@ -19,7 +19,7 @@ function NotificationBell() {
 
   useEffect(() => {
     carregar();
-    const intervalo = setInterval(carregar, 30000); // atualiza a cada 30s
+    const intervalo = setInterval(carregar, 30000);
     return () => clearInterval(intervalo);
   }, []);
 
@@ -40,10 +40,12 @@ function NotificationBell() {
 
   return (
     <div className="notification-bell" ref={ref}>
-      <button className="notification-bell__button" onClick={() => setAberto((v) => !v)}>
-        🔔
-        {naoLidas > 0 && <span className="notification-bell__badge">{naoLidas}</span>}
-      </button>
+      <div className="notification-bell__button-row">
+        <button className="notification-bell__button" onClick={() => setAberto((v) => !v)}>
+          🔔
+          {naoLidas > 0 && <span className="notification-bell__badge">{naoLidas}</span>}
+        </button>
+      </div>
 
       {aberto && (
         <div className="notification-bell__panel">
