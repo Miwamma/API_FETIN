@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends
-from app.schemas.user.patch_user_schema import UserUpdateSchema
 from app.schemas.user.user_schema import UserCreateSchema, UserLoginSchema
 from app.services.user_service import UserService
 from app.core.dependencies import get_current_user
@@ -11,10 +10,6 @@ router = APIRouter(prefix="/users", tags=["Users"])
 def create_user(user: UserCreateSchema):
     return UserService.create_user(user)
 
-
-@router.patch("/update", summary="Update an existing user")
-def update_user(user: UserUpdateSchema, current_user: dict = Depends(get_current_user)):
-    return UserService.update_user(current_user["email"], user)
 
 @router.post("/login", summary="Login")
 def login(credentials: UserLoginSchema):

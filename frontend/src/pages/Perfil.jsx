@@ -14,7 +14,7 @@ function Perfil() {
 
   return (
     <div>
-      <PageHeader title="Perfil" description="Dados da conta utilizada para acessar a API do Water Flow Sensor." />
+      <PageHeader title="Perfil" description="Dados da conta utilizada para acessar a API do Smart Flow." />
 
       {erro && <p style={{ color: '#ef4444' }}>Não foi possível carregar o perfil.</p>}
       {!erro && !usuario && <p style={{ color: '#64748b' }}>Carregando...</p>}

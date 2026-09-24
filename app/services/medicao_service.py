@@ -53,46 +53,28 @@ class MedicaoService:
         return MedicaoService._serialize(doc)
 
     @staticmethod
-    def get_total_consumption(device_id: str) -> dict:
-        volumes = MedicaoRepository.find_volumes_by_device(device_id)
-
-        if not volumes:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Nenhuma medição encontrada para o deviceId '{device_id}'"
-            )
-
-        valid_volumes = [v for v in volumes if isinstance(v, (int, float)) and v >= 0]
-
-        if not valid_volumes:
-            raise HTTPException(
-                status_code=422,
-                detail=f"Medições encontradas para '{device_id}', mas nenhuma possui volume válido"
-            )
-
-        total_liters = sum(valid_volumes)
+    def get_total_consumption(device_id: str, since=None) -> dict:
+        total_liters = MedicaoRepository.sum_volume_since(device_id, since)
 
         return {
             "deviceId": device_id,
             "totalLiters": round(total_liters, 3),
+            "cicloIniciadoEm": since,
         }
 
     @staticmethod
-    def get_consumption_cubic_meters(device_id: str) -> dict:
-        result = MedicaoService.get_total_consumption(device_id)
+    def get_consumption_cubic_meters(device_id: str, since=None) -> dict:
+        result = MedicaoService.get_total_consumption(device_id, since)
         result["totalCubicMeters"] = round(result["totalLiters"] / 1000, 5)
         return result
 
     @staticmethod
-    def get_consumption_cost(device_id: str) -> dict:
-        result = MedicaoService.get_consumption_cubic_meters(device_id)
+    def get_consumption_cost(device_id: str, since=None) -> dict:
+        result = MedicaoService.get_consumption_cubic_meters(device_id, since)
 
         tariff = config.WATER_TARIFF_PER_CUBIC_METER
         if tariff is None or tariff < 0:
-            raise HTTPException(
-                status_code=500,
-                detail="Tarifa de água (WATER_TARIFF_PER_CUBIC_METER) está configurada com valor inválido"
-            )
+            raise HTTPException(status_code=500, detail="Tarifa de água configurada com valor inválido")
 
         result["waterTariffPerCubicMeter"] = tariff
         result["totalCost"] = round(result["totalCubicMeters"] * tariff, 2)

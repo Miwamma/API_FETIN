@@ -35,7 +35,7 @@ function Sidebar({ usuario }) {
   return (
     <aside className="sidebar">
       <div className="sidebar__top">
-        <h1 className="sidebar__logo">Water Flow Sensor</h1>
+        <h1 className="sidebar__logo">Smart Flow Sensor</h1>
         <p className="sidebar__description">
           API para controle de gastos e visualização de consumo de água residencial.
         </p>

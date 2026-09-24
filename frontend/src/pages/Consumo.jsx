@@ -5,6 +5,7 @@ import { consumoAtipicoService } from '../services/consumoAtipicoService';
 import InfoCard from '../components/InfoCard';
 import PageHeader from '../components/PageHeader';
 import ConsumoChart from '../components/ConsumoChart';
+import { formatDateTime } from '../utils/format';
 import '../styles/cards.css';
 
 function Consumo() {
@@ -20,6 +21,16 @@ function Consumo() {
   const [mesReferenciaInput, setMesReferenciaInput] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [mensagemForm, setMensagemForm] = useState('');
+
+  function carregarConsumo() {
+    medicaoService.getConsumoTotal()
+      .then((res) => setLitros({ data: res.data, loading: false, error: false }))
+      .catch(() => setLitros({ data: null, loading: false, error: true }));
+
+    medicaoService.getConsumoCubicMeters()
+      .then((res) => setM3({ data: res.data, loading: false, error: false }))
+      .catch(() => setM3({ data: null, loading: false, error: true }));
+  }
 
   function carregarContasEReferencia() {
     contaAguaService.list()
@@ -39,13 +50,7 @@ function Consumo() {
   }
 
   useEffect(() => {
-    medicaoService.getConsumoTotal()
-      .then((res) => setLitros({ data: res.data, loading: false, error: false }))
-      .catch(() => setLitros({ data: null, loading: false, error: true }));
-
-    medicaoService.getConsumoCubicMeters()
-      .then((res) => setM3({ data: res.data, loading: false, error: false }))
-      .catch(() => setM3({ data: null, loading: false, error: true }));
+    carregarConsumo();
 
     consumoAtipicoService.getHistorico(14)
       .then((res) => setHistorico({ data: res.data, loading: false, error: false }))
@@ -100,7 +105,7 @@ function Consumo() {
         description="Consulte o volume total já utilizado e cadastre suas contas de água anteriores para que o sistema calcule sua referência de consumo diário e identifique dias com consumo fora do padrão."
       />
 
-      <div className="info-grid" style={{ maxWidth: 500, marginBottom: 36 }}>
+      <div className="info-grid" style={{ maxWidth: 500, marginBottom: 0 }}>
         <InfoCard
           title="Consumo total"
           value={litros.data ? litros.data.totalLiters.toFixed(3) : '--'}
@@ -117,6 +122,12 @@ function Consumo() {
           error={m3.error}
         />
       </div>
+
+      <p style={{ marginTop: 8, marginBottom: 36, color: '#94a3b8', fontSize: 13 }}>
+        {litros.data?.cicloIniciadoEm
+          ? `Contabilizando desde ${formatDateTime(litros.data.cicloIniciadoEm)}`
+          : 'Contabilizando desde a primeira medição registrada.'}
+      </p>
 
       <section style={{ marginBottom: 36 }}>
         <h3 style={{ fontSize: 15, fontWeight: 700, color: '#1e293b', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '.4px' }}>

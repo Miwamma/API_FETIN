@@ -5,9 +5,15 @@ from app.schemas.medicao.medicao_schema import MedicaoCreateSchema
 from app.services.medicao_service import MedicaoService
 from app.services.consumo_atipico_service import ConsumoAtipicoService
 from app.repositories.user_repository import UserRepository
-from app.core.dependencies import get_authenticated_device_id
+from app.repositories.ciclo_custo_repository import CicloCustoRepository
+from app.core.dependencies import get_authenticated_device_id, get_current_user
 
 router = APIRouter(prefix="/medicoes", tags=["Medições"])
+
+
+def _obter_inicio_ciclo(user_email: str):
+    ciclo = CicloCustoRepository.find_by_user(user_email)
+    return ciclo["inicio"] if ciclo else None
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, summary="Registrar uma nova medição do ESP32")
@@ -21,7 +27,6 @@ def create_medicao(medicao: MedicaoCreateSchema):
     try:
         ConsumoAtipicoService.verificar_e_notificar(medicao.deviceId, dono)
     except Exception as exc:
-        # Uma falha na notificação nunca pode derrubar o registro da medição em si
         print(f"Falha ao verificar/notificar consumo atípico: {exc}")
 
     return resultado
@@ -35,19 +40,31 @@ def get_latest(device_id: str = Depends(get_authenticated_device_id)):
     return result
 
 
-@router.get("/consumption", summary="Consumo total de água (litros)")
-def get_total_consumption(device_id: str = Depends(get_authenticated_device_id)):
-    return MedicaoService.get_total_consumption(device_id)
+@router.get("/consumption", summary="Consumo total de água (litros) desde o último reinício de ciclo")
+def get_total_consumption(
+    device_id: str = Depends(get_authenticated_device_id),
+    current_user: dict = Depends(get_current_user),
+):
+    since = _obter_inicio_ciclo(current_user["email"])
+    return MedicaoService.get_total_consumption(device_id, since)
 
 
-@router.get("/consumption/cubic-meters", summary="Consumo total em metros cúbicos")
-def get_consumption_cubic_meters(device_id: str = Depends(get_authenticated_device_id)):
-    return MedicaoService.get_consumption_cubic_meters(device_id)
+@router.get("/consumption/cubic-meters", summary="Consumo total em metros cúbicos desde o último reinício de ciclo")
+def get_consumption_cubic_meters(
+    device_id: str = Depends(get_authenticated_device_id),
+    current_user: dict = Depends(get_current_user),
+):
+    since = _obter_inicio_ciclo(current_user["email"])
+    return MedicaoService.get_consumption_cubic_meters(device_id, since)
 
 
-@router.get("/consumption/cost", summary="Custo total estimado do consumo de água")
-def get_consumption_cost(device_id: str = Depends(get_authenticated_device_id)):
-    return MedicaoService.get_consumption_cost(device_id)
+@router.get("/consumption/cost", summary="Custo total estimado desde o último reinício de ciclo")
+def get_consumption_cost(
+    device_id: str = Depends(get_authenticated_device_id),
+    current_user: dict = Depends(get_current_user),
+):
+    since = _obter_inicio_ciclo(current_user["email"])
+    return MedicaoService.get_consumption_cost(device_id, since)
 
 
 @router.get("", summary="Listar medições")
